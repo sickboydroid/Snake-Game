@@ -61,13 +61,17 @@ window.addEventListener("keydown", function (event) {
   }
 });
 
-function setDirection(direction) {
-  if (snake.cells.length > 1 && areOppositeDirections(direction, snake.direction)) return;
-  snake.direction = direction;
-}
-
-function areOppositeDirections(dirA, dirB) {
-  return dirA[0] * dirB[0] + dirA[1] * dirB[1] === -1;
+function nextFrame() {
+  moveSnake();
+  if (isSnakeHead(food.row, food.col)) {
+    updateScore();
+    growSnake();
+    spawnFood();
+  } else if (isSnakeEatingItself()) {
+    gameOver();
+    return;
+  }
+  setTimeout(nextFrame, 150 / (snake.cells.length * 0.5));
 }
 
 function resetGameGrid(cellSizePixels = DEFAULT_CELL_SIZE_PIXELS) {
@@ -81,21 +85,17 @@ function resetGameGrid(cellSizePixels = DEFAULT_CELL_SIZE_PIXELS) {
   spawnFood();
 }
 
-function nextFrame() {
-  moveSnake();
-  if (isSnakeHead(food.row, food.col)) {
-    updateScore();
-    growSnake();
-    spawnFood();
-  } else if (isSnakeEatingItself()) {
-    gameOver();
-    return;
-  }
-  setTimeout(nextFrame, getTime());
+function setDirection(direction) {
+  if (snake.cells.length > 1 && areOppositeDirections(direction, snake.direction)) return;
+  snake.direction = direction;
 }
 
-function getTime() {
-  return 150 / (snake.cells.length * 0.5);
+function areOppositeDirections(dirA, dirB) {
+  return dirA[0] * dirB[0] + dirA[1] * dirB[1] === -1;
+}
+
+function gameOver() {
+  console.log("GAME OVER");
 }
 
 function updateScore() {
@@ -108,10 +108,6 @@ function isSnakeEatingItself() {
   }
 }
 
-function gameOver() {
-  console.log("GAME OVER");
-}
-
 function moveSnake() {
   let newPosition = [snake.head.row + snake.direction[0], snake.head.col + snake.direction[1]];
   for (let i = 0; i < snake.cells.length; i++) {
@@ -120,19 +116,6 @@ function moveSnake() {
     snake.cells[i].col = newPosition[1];
     newPosition = temp;
   }
-}
-
-function generateCell(r, c, classList = ["cell"]) {
-  if (!classList.some(e => e === "cell")) classList.push("cells");
-  const cellDiv = document.createElement("div");
-  cellDiv.style["border"] = "1px solid grey";
-  cellDiv.classList.add(...classList);
-  gameGrid.appendChild(cellDiv);
-  const cell = new Cell();
-  cell.element = cellDiv;
-  cell.row = r;
-  cell.col = c;
-  return cell;
 }
 
 function growSnake() {
@@ -153,6 +136,19 @@ function spawnFood() {
   while (isSnakeCell(...foodPosition)) foodPosition = generateCellPosition();
   if (!food) food = generateFoodCell(...foodPosition);
   else [food.row, food.col] = foodPosition;
+}
+
+function generateCell(r, c, classList = ["cell"]) {
+  if (!classList.some(e => e === "cell")) classList.push("cells");
+  const cellDiv = document.createElement("div");
+  cellDiv.style["border"] = "1px solid grey";
+  cellDiv.classList.add(...classList);
+  gameGrid.appendChild(cellDiv);
+  const cell = new Cell();
+  cell.element = cellDiv;
+  cell.row = r;
+  cell.col = c;
+  return cell;
 }
 
 function generateCellPosition() {
