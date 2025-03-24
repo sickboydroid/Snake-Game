@@ -71,7 +71,7 @@ function nextFrame() {
     gameOver();
     return;
   }
-  setTimeout(nextFrame, 150 / (snake.cells.length * 0.5));
+  setTimeout(nextFrame, nonlinearMapping(snake.cells.length, 100, 50));
 }
 
 function resetGameGrid(cellSizePixels = DEFAULT_CELL_SIZE_PIXELS) {
@@ -177,4 +177,10 @@ function isSnakeHead(r, c) {
 
 function isFoodCell(r, c) {
   return food.row === r && food.col === c;
+}
+
+// Maps [min, max] to [1, inf]. You can then provide x to get value b/w [min, max]
+function nonlinearMapping(x, min, max) {
+  let result = max + min * Math.exp(-x / 10);
+  return Math.round(result);
 }
